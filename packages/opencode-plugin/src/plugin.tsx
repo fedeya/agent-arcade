@@ -2,6 +2,7 @@
 import { createSignal } from "solid-js"
 import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { createSignalFeed } from "./arcade/feed"
+import type { PendingPermission } from "./arcade/types"
 import { RunnerOverlay, formatTool } from "./games/runner"
 
 type WaitGameOptions = {
@@ -16,6 +17,7 @@ const plugin: TuiPluginModule & { id: string } = {
     const [open, setOpen] = createSignal(false)
     const [busy, setBusy] = createSignal(false)
     const [done, setDone] = createSignal(false)
+    const [pendingPermission, setPendingPermission] = createSignal<PendingPermission | undefined>()
     const [autoStart, setAutoStart] = createSignal(api.kv.get("wait_game_auto_start", defaultAutoStart) === true)
     const feed = createSignalFeed()
 
@@ -62,7 +64,11 @@ const plugin: TuiPluginModule & { id: string } = {
     })
 
     api.event.on("permission.asked", (event) => {
+      setPendingPermission({ id: event.properties.id })
       feed.pushOnce(`permission:${event.properties.id}`, "permission boss appeared", "warn", 30_000)
+    })
+    api.event.on("permission.replied", (event) => {
+      if (pendingPermission()?.id === event.properties.requestID) setPendingPermission(undefined)
     })
     api.event.on("question.asked", (event) => {
       feed.pushOnce(`question:${event.properties.id}`, "agent needs a human", "warn", 30_000)
@@ -82,6 +88,22 @@ const plugin: TuiPluginModule & { id: string } = {
         if (next && !busy()) feed.clearFeed()
         return next
       })
+    }
+
+    const approvePermission = async () => {
+      const permission = pendingPermission()
+      if (!permission) return
+
+      try {
+        await api.client.permission.reply({ requestID: permission.id, reply: "once" })
+        setPendingPermission(undefined)
+        feed.push("permission accepted", "good")
+      } catch (error) {
+        api.ui.toast({
+          variant: "error",
+          message: error instanceof Error ? error.message : "Failed to approve permission",
+        })
+      }
     }
 
     const toggleAutoStart = () => {
@@ -107,6 +129,8 @@ const plugin: TuiPluginModule & { id: string } = {
               close={closeGame}
               busy={busy}
               done={done}
+              pendingPermission={pendingPermission}
+              approvePermission={approvePermission}
             />
           ) : null
         },

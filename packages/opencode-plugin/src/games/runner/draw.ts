@@ -4,7 +4,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value))
 }
 
-export function drawRunner(state: RunnerState, busy: boolean, done: boolean, high: number, cols: number) {
+export function drawRunner(state: RunnerState, pendingPermission: boolean, cols: number) {
   const inner = Math.max(1, Math.floor(cols))
   const floorRow = notificationRows + ground
   const rows = Array.from({ length: floorRow + 1 }, () => Array.from({ length: inner }, () => " "))
@@ -31,12 +31,12 @@ export function drawRunner(state: RunnerState, busy: boolean, done: boolean, hig
 
   rows[floorRow] = Array.from({ length: inner }, (_, i) => (i % 4 === state.frame % 4 ? "_" : "-"))
 
-  const status = done ? "AGENT DONE. GO PRETEND YOU WERE WORKING." : busy ? "agent is cooking..." : "no active agent, practice mode"
+  const help = pendingPermission
+    ? "a approve once - space/up/k jump - r reset - q/esc quit"
+    : "space/up/k jump - r reset - q/esc quit - /wait-game"
   return [
-    `score ${String(state.score).padStart(4, "0")}  high ${String(high).padStart(4, "0")}  ${status}`.slice(0, inner),
-    "",
     ...rows.map((line) => line.join("")),
     "",
-    (state.over ? "you got paged by reality. press r to retry or q to quit" : "space/up/k jump - r reset - q/esc quit - /wait-game").slice(0, inner),
+    (state.over ? "you got paged by reality. press r to retry or q to quit" : help).slice(0, inner),
   ]
 }

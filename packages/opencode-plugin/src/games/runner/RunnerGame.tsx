@@ -8,6 +8,8 @@ import { jumpVelocity, tickMs } from "./model"
 import { initialRunnerState, stepRunnerState } from "./state"
 
 const maxPanelWidth = 120
+const permissionBadge = " PERMISSION: PRESS A "
+const permissionBorderColors = ["#ff005f", "#ffaf00", "#ffff00", "#00ff87", "#00afff", "#af5fff"]
 
 export function RunnerGame(props: GameProps) {
   const dim = useTerminalDimensions()
@@ -34,9 +36,11 @@ export function RunnerGame(props: GameProps) {
       { name: "wait-game.jump", run: jump },
       { name: "wait-game.reset", run: reset },
       { name: "wait-game.quit", run: props.close },
+      { name: "wait-game.approve-permission", run: props.approvePermission },
     ],
     bindings: [
       { key: "space,up,k", cmd: "wait-game.jump" },
+      { key: "a", cmd: "wait-game.approve-permission" },
       { key: "r", cmd: "wait-game.reset" },
       { key: "escape,q", cmd: "wait-game.quit" },
     ],
@@ -58,14 +62,22 @@ export function RunnerGame(props: GameProps) {
 
   onCleanup(() => clearInterval(timer))
 
-  const lines = createMemo(() => drawRunner(game(), props.busy(), props.done(), high(), worldWidth()))
+  const pendingPermission = createMemo(() => props.pendingPermission() !== undefined)
+  const status = createMemo(() => (props.done() ? "AGENT DONE. GO PRETEND YOU WERE WORKING." : props.busy() ? "agent is cooking..." : "no active agent, practice mode"))
+  const header = createMemo(() => `score ${String(game().score).padStart(4, "0")}  high ${String(high()).padStart(4, "0")}  ${status()}`)
+  const headerLeftWidth = createMemo(() => Math.max(0, worldWidth() - (pendingPermission() ? permissionBadge.length : 0)))
+  const lines = createMemo(() => drawRunner(game(), pendingPermission(), worldWidth()))
+  const borderColor = createMemo(() => {
+    if (!pendingPermission()) return "#ff5f87"
+    return permissionBorderColors[Math.floor(game().frame / 2) % permissionBorderColors.length]
+  })
 
   return (
     <box
       width={panelWidth()}
       maxWidth={dim().width}
       border
-      borderColor="#ff5f87"
+      borderColor={borderColor()}
       backgroundColor="#050505"
       paddingTop={1}
       paddingBottom={1}
@@ -73,8 +85,12 @@ export function RunnerGame(props: GameProps) {
       paddingRight={2}
       flexDirection="column"
     >
-      {lines().map((line, index) => (
-        <text fg={index === 0 ? "#87ffaf" : line.startsWith(">>") ? "#5fd7ff" : "#d0d0d0"}>{line}</text>
+      <box flexDirection="row">
+        <text fg="#87ffaf">{header().slice(0, headerLeftWidth()).padEnd(headerLeftWidth())}</text>
+        {pendingPermission() ? <text fg="#050505" bg="#ffff00">{permissionBadge}</text> : null}
+      </box>
+      {lines().map((line) => (
+        <text fg={line.startsWith(">>") ? "#5fd7ff" : "#d0d0d0"}>{line}</text>
       ))}
     </box>
   )

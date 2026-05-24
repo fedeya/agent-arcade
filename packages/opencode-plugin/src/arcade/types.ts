@@ -6,6 +6,10 @@ export type AgentSignal = {
   kind: "info" | "good" | "warn" | "bad"
 }
 
+export type PendingPermission = {
+  id: string
+}
+
 export type GameProps = {
   api: TuiPluginApi
   feed: () => AgentSignal[]
@@ -13,4 +17,6 @@ export type GameProps = {
   close: () => void
   busy: () => boolean
   done: () => boolean
+  pendingPermission: () => PendingPermission | undefined
+  approvePermission: () => Promise<void>
 }
