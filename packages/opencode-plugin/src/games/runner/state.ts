@@ -5,7 +5,7 @@ import { gravity, notificationRows, playerX } from "./model"
 const obstacleSpeed = 1.2
 const floaterSpeed = 0.75
 const gameOverFloaterSpeed = 0.55
-const floaterLift = 0.01
+const floaterGap = 4
 const collisionRange = 1.1
 const collisionClearance = 0.25
 const minObstacleGap = 18
@@ -44,19 +44,28 @@ export function stepRunnerState(state: RunnerState, incoming: AgentSignal[], wor
   const nextObstacle = state.nextObstacle - 1
   const spawned = nextObstacle <= worldWidth ? [{ id: state.frame, x: nextObstacle, h: random() > 0.72 ? 3 : 2 }] : []
   const obstacles = [...state.obstacles.map((item) => ({ ...item, x: item.x - obstacleSpeed })), ...spawned].filter((item) => item.x > -2)
-  const fresh = incoming.slice(-4).map((item, index) => {
+  const rowTails = Array.from({ length: notificationRows }, () => worldWidth)
+  for (const floater of state.floaters) {
+    const row = Math.max(0, Math.min(notificationRows - 1, Math.round(floater.y)))
+    rowTails[row] = Math.max(rowTails[row], floater.x + floater.text.length + floaterGap)
+  }
+
+  const fresh = incoming.slice(-4).map((item) => {
     const text = signalText(item)
+    const row = rowTails.reduce((best, tail, index) => (tail < rowTails[best] ? index : best), 0)
+    const x = rowTails[row]
+    rowTails[row] = x + text.length + floaterGap
 
     return {
       id: item.id,
       text,
-      x: worldWidth,
-      y: index % notificationRows,
-      ttl: Math.ceil((worldWidth + text.length + 2) / floaterSpeed),
+      x,
+      y: row,
+      ttl: Math.ceil((x + text.length + 2) / floaterSpeed),
     }
   })
   const floaters = [
-    ...state.floaters.map((item) => ({ ...item, x: item.x - floaterSpeed, y: item.y - floaterLift, ttl: item.ttl - 1 })),
+    ...state.floaters.map((item) => ({ ...item, x: item.x - floaterSpeed, ttl: item.ttl - 1 })),
     ...fresh,
   ].filter((item) => item.ttl > 0 && item.x > -item.text.length)
 
