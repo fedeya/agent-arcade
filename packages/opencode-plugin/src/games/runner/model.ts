@@ -1,4 +1,3 @@
-export const width = 54
 export const ground = 8
 export const playerX = 8
 export const jumpVelocity = 3.2

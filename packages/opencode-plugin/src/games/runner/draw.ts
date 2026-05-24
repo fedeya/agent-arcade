@@ -1,17 +1,17 @@
-import { ground, playerX, width, type RunnerState } from "./model"
+import { ground, playerX, type RunnerState } from "./model"
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value))
 }
 
 export function drawRunner(state: RunnerState, busy: boolean, done: boolean, high: number, cols: number) {
-  const inner = Math.max(24, Math.min(width, cols - 4))
+  const inner = Math.max(1, Math.floor(cols))
   const rows = Array.from({ length: ground + 1 }, () => Array.from({ length: inner }, () => " "))
   const playerRow = ground - 1 - Math.round(state.playerY)
   const player = state.over ? "x" : state.frame % 8 < 4 ? "@" : "o"
 
-  if (playerRow >= 0 && playerRow < ground) rows[playerRow][playerX] = player
-  if (playerRow + 1 >= 0 && playerRow + 1 < ground) rows[playerRow + 1][playerX] = "|"
+  if (playerX < inner && playerRow >= 0 && playerRow < ground) rows[playerRow][playerX] = player
+  if (playerX < inner && playerRow + 1 >= 0 && playerRow + 1 < ground) rows[playerRow + 1][playerX] = "|"
 
   for (const obstacle of state.obstacles) {
     const x = Math.round(obstacle.x)
@@ -34,6 +34,6 @@ export function drawRunner(state: RunnerState, busy: boolean, done: boolean, hig
     "",
     ...rows.map((line) => line.join("")),
     "",
-    state.over ? "you got paged by reality. press r to retry or q to quit" : "space/up/k jump - r reset - q/esc quit - /wait-game",
+    (state.over ? "you got paged by reality. press r to retry or q to quit" : "space/up/k jump - r reset - q/esc quit - /wait-game").slice(0, inner),
   ]
 }
