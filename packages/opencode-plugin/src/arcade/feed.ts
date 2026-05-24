@@ -22,9 +22,19 @@ export function createSignalFeed() {
     push(text, kind)
   }
 
+  const pushUnique = (key: string, text: string, kind: AgentSignal["kind"] = "info") => {
+    if (seen.has(key)) return
+    seen.set(key, Date.now())
+    push(text, kind)
+  }
+
+  const clearFeed = () => queue.splice(0)
+
   return {
     feed: () => queue.slice(),
-    clearFeed: () => queue.splice(0),
+    clearFeed,
+    push,
     pushOnce,
+    pushUnique,
   }
 }

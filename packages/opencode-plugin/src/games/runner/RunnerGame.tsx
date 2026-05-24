@@ -73,9 +73,6 @@ export function RunnerGame(props: GameProps) {
       paddingRight={2}
       flexDirection="column"
     >
-      <text fg="#ff5f87"><b>runner</b> <span style={{ fg: "#777777" }}>overlay mode: pretending to monitor the agent</span></text>
-      <text fg="#777777">agent tool calls become airborne nonsense while the real UI stays behind the backdrop</text>
-      <box height={1} />
       {lines().map((line, index) => (
         <text fg={index === 0 ? "#87ffaf" : line.startsWith(">>") ? "#5fd7ff" : "#d0d0d0"}>{line}</text>
       ))}

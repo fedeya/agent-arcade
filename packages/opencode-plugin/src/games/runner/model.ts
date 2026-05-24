@@ -1,4 +1,5 @@
 export const ground = 8
+export const notificationRows = 3
 export const playerX = 8
 export const jumpVelocity = 3.2
 export const gravity = 0.42

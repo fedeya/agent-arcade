@@ -1,12 +1,11 @@
 import type { AgentSignal } from "../../arcade/types"
 import type { RunnerState } from "./model"
-import { gravity, playerX } from "./model"
+import { gravity, notificationRows, playerX } from "./model"
 
 const obstacleSpeed = 1.2
 const floaterSpeed = 0.75
 const gameOverFloaterSpeed = 0.55
 const floaterLift = 0.01
-const floaterLifetime = 95
 const collisionRange = 1.1
 const collisionClearance = 0.25
 const minObstacleGap = 18
@@ -45,13 +44,17 @@ export function stepRunnerState(state: RunnerState, incoming: AgentSignal[], wor
   const nextObstacle = state.nextObstacle - 1
   const spawned = nextObstacle <= worldWidth ? [{ id: state.frame, x: nextObstacle, h: random() > 0.72 ? 3 : 2 }] : []
   const obstacles = [...state.obstacles.map((item) => ({ ...item, x: item.x - obstacleSpeed })), ...spawned].filter((item) => item.x > -2)
-  const fresh = incoming.slice(-4).map((item, index) => ({
-    id: item.id,
-    text: signalText(item),
-    x: worldWidth - 2,
-    y: 1 + index * 1.4,
-    ttl: floaterLifetime,
-  }))
+  const fresh = incoming.slice(-4).map((item, index) => {
+    const text = signalText(item)
+
+    return {
+      id: item.id,
+      text,
+      x: worldWidth,
+      y: index % notificationRows,
+      ttl: Math.ceil((worldWidth + text.length + 2) / floaterSpeed),
+    }
+  })
   const floaters = [
     ...state.floaters.map((item) => ({ ...item, x: item.x - floaterSpeed, y: item.y - floaterLift, ttl: item.ttl - 1 })),
     ...fresh,

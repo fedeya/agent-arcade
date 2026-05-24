@@ -4,25 +4,39 @@ import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { createSignalFeed } from "./arcade/feed"
 import { RunnerOverlay, formatTool } from "./games/runner"
 
+type WaitGameOptions = {
+  autoStart?: boolean
+}
+
 const plugin: TuiPluginModule & { id: string } = {
   id: "wait-game",
-  tui: async (api) => {
+  tui: async (api, options) => {
+    const pluginOptions = options as WaitGameOptions | undefined
+    const defaultAutoStart = pluginOptions?.autoStart === true
     const [open, setOpen] = createSignal(false)
     const [busy, setBusy] = createSignal(false)
     const [done, setDone] = createSignal(false)
+    const [autoStart, setAutoStart] = createSignal(api.kv.get("wait_game_auto_start", defaultAutoStart) === true)
     const feed = createSignalFeed()
 
     api.event.on("session.status", (event) => {
       const sessionID = event.properties.sessionID
       const status = event.properties.status.type
       if (status === "busy") {
+        const wasBusy = busy()
         setBusy(true)
         setDone(false)
-        feed.pushOnce(`session:${sessionID}:busy`, "agent started cooking", "good", 5000)
+        if (!wasBusy) {
+          feed.clearFeed()
+          if (autoStart()) setOpen(true)
+          feed.push("agent started cooking", "good")
+        }
       }
       if (status === "retry") {
+        const wasBusy = busy()
         setBusy(true)
         setDone(false)
+        if (autoStart() && !wasBusy) setOpen(true)
         feed.pushOnce(`session:${sessionID}:retry`, "agent hit retry lore", "warn", 5000)
       }
       if (status === "idle") {
@@ -43,7 +57,7 @@ const plugin: TuiPluginModule & { id: string } = {
         )
       }
       if (part.type === "reasoning" && part.time?.end) {
-        feed.pushOnce(`reasoning:${part.id}:end`, "thinking finished. no refunds.", "info", 30_000)
+        feed.pushUnique(`reasoning:${part.id}:end`, "thinking finished. no refunds.", "info")
       }
     })
 
@@ -58,11 +72,28 @@ const plugin: TuiPluginModule & { id: string } = {
     })
 
     const closeGame = () => {
+      feed.clearFeed()
       setOpen(false)
     }
 
     const openGame = () => {
-      setOpen((value) => !value)
+      setOpen((value) => {
+        const next = !value
+        if (next && !busy()) feed.clearFeed()
+        return next
+      })
+    }
+
+    const toggleAutoStart = () => {
+      setAutoStart((value) => {
+        const next = !value
+        api.kv.set("wait_game_auto_start", next)
+        api.ui.toast({
+          variant: next ? "success" : "info",
+          message: `Wait game auto-start ${next ? "enabled" : "disabled"}`,
+        })
+        return next
+      })
     }
 
     api.slots.register({
@@ -91,6 +122,14 @@ const plugin: TuiPluginModule & { id: string } = {
           namespace: "palette",
           slashName: "wait-game",
           run: openGame,
+        },
+        {
+          name: "wait-game.auto-start",
+          title: "Toggle Wait Game Auto-start",
+          category: "Plugin",
+          namespace: "palette",
+          slashName: "wait-game-auto",
+          run: toggleAutoStart,
         },
       ],
       bindings: [{ key: "ctrl+shift+g", cmd: "wait-game.open" }],
