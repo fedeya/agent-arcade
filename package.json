@@ -1,0 +1,14 @@
+{
+  "name": "agent-arcade",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "typescript": "^5.8.2"
+  }
+}
