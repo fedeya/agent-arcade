@@ -1,5 +1,5 @@
 {
-  "name": "@agent-arcade/opencode-plugin",
+  "name": "@agent-arcade/opencode",
   "private": true,
   "type": "module",
   "scripts": {
