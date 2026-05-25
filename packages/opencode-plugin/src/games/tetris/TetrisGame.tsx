@@ -13,13 +13,13 @@ const permissionBorderColors = ["#ff005f", "#ffaf00", "#ffff00", "#00ff87", "#00
 export function TetrisGame() {
   const arcade = useArcade()
   const dim = useTerminalDimensions()
-  const game = () => arcade.tetrisGame() ?? arcade.ensureTetrisGame()
+  const game = () => arcade.ensureGameState("tetris", initialTetrisState)
   const [high, setHigh] = createSignal(arcade.api.kv.get("agent_arcade_tetris_high_score", 0))
   const pendingPermission = createMemo(() => arcade.pendingPermission() !== undefined)
 
-  const reset = () => arcade.resetTetris()
+  const reset = () => arcade.resetGameState("tetris", initialTetrisState)
   const move = (input: TetrisInput) => {
-    arcade.setTetrisGame((state) => applyTetrisInput(state ?? initialTetrisState(), input))
+    arcade.setGameState("tetris", (state) => applyTetrisInput(state ?? initialTetrisState(), input))
   }
 
   useBindings(() => ({
@@ -52,7 +52,7 @@ export function TetrisGame() {
     const incoming = arcade.feed()
     if (incoming.length > 0) arcade.clearFeed()
 
-    arcade.setTetrisGame((state) => {
+    arcade.setGameState("tetris", (state) => {
       state = state ?? initialTetrisState()
       const next = stepTetrisState(state, incoming)
       if (next.score > high()) {

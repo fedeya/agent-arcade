@@ -7,5 +7,3 @@ export type AgentSignal = {
 export type PendingPermission = {
   id: string
 }
-
-export type ArcadeGame = "runner" | "tetris"

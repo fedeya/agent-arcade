@@ -16,11 +16,11 @@ export function RunnerGame() {
   const dim = useTerminalDimensions()
   const panelWidth = createMemo(() => Math.min(Math.max(1, Math.floor(dim().width)), maxPanelWidth))
   const worldWidth = createMemo(() => Math.max(1, panelWidth() - 6))
-  const game = () => arcade.runnerGame() ?? arcade.ensureRunnerGame(worldWidth())
+  const game = () => arcade.ensureGameState("runner", () => initialRunnerState(worldWidth()))
   const [high, setHigh] = createSignal(arcade.api.kv.get("agent_arcade_high_score", arcade.api.kv.get("wait_game_high_score", 0)))
 
   const jump = () => {
-    arcade.setRunnerGame((state) => {
+    arcade.setGameState("runner", (state) => {
       state = state ?? initialRunnerState(worldWidth())
       if (state.over) return state
       if (state.playerY > 0) return state
@@ -29,7 +29,7 @@ export function RunnerGame() {
   }
 
   const reset = () => {
-    arcade.resetRunner(worldWidth())
+    arcade.resetGameState("runner", () => initialRunnerState(worldWidth()))
   }
 
   useBindings(() => ({
@@ -54,7 +54,7 @@ export function RunnerGame() {
     const incoming = arcade.feed()
     if (incoming.length > 0) arcade.clearFeed()
 
-    arcade.setRunnerGame((state) => {
+    arcade.setGameState("runner", (state) => {
       state = state ?? initialRunnerState(worldWidth())
       const next = stepRunnerState(state, incoming, worldWidth())
       if (next.score > high()) {

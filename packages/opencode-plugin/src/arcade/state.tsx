@@ -1,13 +1,12 @@
 /** @jsxImportSource @opentui/solid */
-import { createContext, createSignal, useContext, type JSX, type Setter } from "solid-js"
+import { createContext, createSignal, useContext, type JSX } from "solid-js"
 import type { TuiPluginApi } from "@opencode-ai/plugin/tui"
 import { createSignalFeed } from "./feed"
-import type { ArcadeGame, PendingPermission } from "./types"
+import { gameOptions, isArcadeGame, type ArcadeGame } from "./games"
+import type { PendingPermission } from "./types"
 import { formatTool } from "../games/runner/format"
 import type { RunnerState } from "../games/runner/model"
-import { initialRunnerState } from "../games/runner/state"
 import type { TetrisState } from "../games/tetris/model"
-import { initialTetrisState } from "../games/tetris/state"
 
 export type AgentArcadeOptions = {
   autoStart?: boolean
@@ -16,8 +15,14 @@ export type AgentArcadeOptions = {
 
 type AutoStartGame = "last" | "runner" | "tetris" | "random"
 
-const isArcadeGame = (value: unknown): value is ArcadeGame => value === "runner" || value === "tetris"
 const isAutoStartGame = (value: unknown): value is AutoStartGame => value === "last" || value === "runner" || value === "tetris" || value === "random"
+
+type GameStateMap = {
+  runner: RunnerState
+  tetris: TetrisState
+}
+
+type GameStateUpdate<K extends ArcadeGame> = GameStateMap[K] | ((state: GameStateMap[K] | undefined) => GameStateMap[K])
 
 export type ArcadeController = {
   api: TuiPluginApi
@@ -28,14 +33,10 @@ export type ArcadeController = {
   selectedGame: () => ArcadeGame
   feed: ReturnType<typeof createSignalFeed>["feed"]
   clearFeed: ReturnType<typeof createSignalFeed>["clearFeed"]
-  runnerGame: () => RunnerState | undefined
-  setRunnerGame: Setter<RunnerState | undefined>
-  tetrisGame: () => TetrisState | undefined
-  setTetrisGame: Setter<TetrisState | undefined>
-  ensureRunnerGame: (worldWidth: number) => RunnerState
-  ensureTetrisGame: () => TetrisState
-  resetRunner: (worldWidth: number) => void
-  resetTetris: () => void
+  getGameState: <K extends ArcadeGame>(game: K) => GameStateMap[K] | undefined
+  setGameState: <K extends ArcadeGame>(game: K, update: GameStateUpdate<K>) => void
+  ensureGameState: <K extends ArcadeGame>(game: K, create: () => GameStateMap[K]) => GameStateMap[K]
+  resetGameState: <K extends ArcadeGame>(game: K, create: () => GameStateMap[K]) => void
   closeGame: () => void
   openGame: () => void
   backToMenu: () => void
@@ -55,8 +56,7 @@ export function createArcadeController(api: TuiPluginApi, options?: AgentArcadeO
   const [pendingPermission, setPendingPermission] = createSignal<PendingPermission | undefined>()
   const [autoStart, setAutoStart] = createSignal(api.kv.get("agent_arcade_auto_start", api.kv.get("wait_game_auto_start", defaultAutoStart)) === true)
   const [selectedGame, setSelectedGame] = createSignal<ArcadeGame>(isArcadeGame(storedGame) ? storedGame : "tetris")
-  const [runnerGame, setRunnerGame] = createSignal<RunnerState>()
-  const [tetrisGame, setTetrisGame] = createSignal<TetrisState>()
+  const [gameStates, setGameStates] = createSignal<Partial<GameStateMap>>({})
   const feed = createSignalFeed()
 
   const chooseAutoStartGame = (): ArcadeGame => {
@@ -88,14 +88,11 @@ export function createArcadeController(api: TuiPluginApi, options?: AgentArcadeO
     api.ui.dialog.replace(() => (
       <DialogSelect
         title="Agent Arcade"
-        options={[
-          { title: "Runner", value: "runner", description: "Jump over agent chaos" },
-          { title: "Tetris", value: "tetris", description: "Stack blocks while tools run" },
-        ]}
+        options={[...gameOptions]}
         current={selectedGame()}
         onSelect={(item) => {
           api.ui.dialog.clear()
-          startGame(item.value as ArcadeGame)
+          if (isArcadeGame(item.value)) startGame(item.value)
         }}
       />
     ))
@@ -142,20 +139,26 @@ export function createArcadeController(api: TuiPluginApi, options?: AgentArcadeO
     })
   }
 
-  const ensureRunnerGame = (worldWidth: number) => {
-    const current = runnerGame()
+  const getGameState = <K extends ArcadeGame>(game: K) => gameStates()[game] as GameStateMap[K] | undefined
+
+  const setGameState = <K extends ArcadeGame>(game: K, update: GameStateUpdate<K>) => {
+    setGameStates((states) => {
+      const current = states[game] as GameStateMap[K] | undefined
+      const next = typeof update === "function" ? update(current) : update
+      return { ...states, [game]: next }
+    })
+  }
+
+  const ensureGameState = <K extends ArcadeGame>(game: K, create: () => GameStateMap[K]) => {
+    const current = getGameState(game)
     if (current) return current
-    const next = initialRunnerState(worldWidth)
-    setRunnerGame(next)
+    const next = create()
+    setGameState(game, next)
     return next
   }
 
-  const ensureTetrisGame = () => {
-    const current = tetrisGame()
-    if (current) return current
-    const next = initialTetrisState()
-    setTetrisGame(next)
-    return next
+  const resetGameState = <K extends ArcadeGame>(game: K, create: () => GameStateMap[K]) => {
+    setGameState(game, create())
   }
 
   api.event.on("session.status", (event) => {
@@ -226,14 +229,10 @@ export function createArcadeController(api: TuiPluginApi, options?: AgentArcadeO
     selectedGame,
     feed: feed.feed,
     clearFeed: feed.clearFeed,
-    runnerGame,
-    setRunnerGame,
-    tetrisGame,
-    setTetrisGame,
-    ensureRunnerGame,
-    ensureTetrisGame,
-    resetRunner: (worldWidth) => setRunnerGame(initialRunnerState(worldWidth)),
-    resetTetris: () => setTetrisGame(initialTetrisState()),
+    getGameState,
+    setGameState,
+    ensureGameState,
+    resetGameState,
     closeGame,
     openGame,
     backToMenu,
