@@ -5,6 +5,7 @@ const linesPerLevel = 8
 const clearScores = [0, 40, 100, 300, 1200]
 const gravityFramesByLevel = [7, 6, 5, 4, 3, 2, 1]
 const clearAnimationFrames = 3
+const lockDelayFrames = 5
 
 export function levelForLines(lines: number) {
   return Math.floor(lines / linesPerLevel) + 1
@@ -29,16 +30,34 @@ function createPieceFromKind(kind: CellKind): Piece {
   }
 }
 
-function createPiece(random = Math.random): Piece {
-  return createPieceFromKind(pieceKinds[Math.floor(random() * pieceKinds.length)] ?? "t")
+function shuffledBag(random = Math.random) {
+  const bag = pieceKinds.slice()
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    const next = bag[i]!
+    bag[i] = bag[j]!
+    bag[j] = next
+  }
+  return bag
+}
+
+function drawPiece(bag: CellKind[], random = Math.random) {
+  const nextBag = bag.length > 0 ? bag.slice() : shuffledBag(random)
+  const kind = nextBag.shift() ?? "t"
+  return { piece: createPieceFromKind(kind), bag: nextBag }
 }
 
 export function initialTetrisState(random = Math.random): TetrisState {
+  const first = drawPiece([], random)
+  const second = drawPiece(first.bag, random)
+
   return {
     board: emptyBoard(),
-    active: createPiece(random),
-    next: createPiece(random),
+    active: first.piece,
+    next: second.piece,
+    bag: second.bag,
     canHold: true,
+    paused: false,
     score: 0,
     lines: 0,
     over: false,
@@ -73,7 +92,8 @@ function rotated(piece: Piece): Piece {
 }
 
 function tryMove(state: TetrisState, piece: Piece) {
-  return collides(state.board, piece) ? state : { ...state, active: piece }
+  if (collides(state.board, piece)) return state
+  return { ...state, active: piece, lockDelay: collides(state.board, moved(piece, 0, 1)) ? 0 : undefined }
 }
 
 function filledRows(board: TetrisState["board"]) {
@@ -89,15 +109,17 @@ function removeRows(board: TetrisState["board"], rows: number[]) {
 
 function spawnNext(state: TetrisState, board: TetrisState["board"], random = Math.random): TetrisState {
   const active = { ...state.next, x: 3, y: 0 }
-  const next = createPiece(random)
+  const drawn = drawPiece(state.bag, random)
   return {
     ...state,
     board,
     active,
-    next,
+    next: drawn.piece,
+    bag: drawn.bag,
     canHold: true,
     over: collides(board, active),
     clearAnimation: undefined,
+    lockDelay: undefined,
   }
 }
 
@@ -145,7 +167,8 @@ function stepClearAnimation(state: TetrisState, random = Math.random): TetrisSta
 
 function descend(state: TetrisState, random = Math.random): TetrisState {
   const next = moved(state.active, 0, 1)
-  if (!collides(state.board, next)) return { ...state, active: next }
+  if (!collides(state.board, next)) return { ...state, active: next, lockDelay: undefined }
+  if ((state.lockDelay ?? 0) + 1 < lockDelayFrames) return { ...state, lockDelay: (state.lockDelay ?? 0) + 1 }
   return lockPiece(state, random)
 }
 
@@ -165,26 +188,30 @@ function updateNotices(notices: TetrisState["notices"], incoming: AgentSignal[])
 }
 
 export function applyTetrisInput(state: TetrisState, input: TetrisInput, random = Math.random): TetrisState {
-  if (state.over || state.clearAnimation) return state
+  if (input === "pause") return state.over ? state : { ...state, paused: !state.paused }
+  if (state.over || state.clearAnimation || state.paused) return state
   if (input === "left") return tryMove(state, moved(state.active, -1, 0))
   if (input === "right") return tryMove(state, moved(state.active, 1, 0))
   if (input === "hold") {
     if (!state.canHold) return state
 
     const active = state.hold ? createPieceFromKind(state.hold) : { ...state.next, x: 3, y: 0 }
-    const next = state.hold ? state.next : createPiece(random)
+    const drawn = state.hold ? undefined : drawPiece(state.bag, random)
+    const next = state.hold ? state.next : drawn!.piece
     return {
       ...state,
       active,
       next,
+      bag: drawn?.bag ?? state.bag,
       hold: state.active.kind,
       canHold: false,
+      lockDelay: collides(state.board, moved(active, 0, 1)) ? 0 : undefined,
       over: collides(state.board, active),
     }
   }
   if (input === "down") {
     const next = descend(state, random)
-    return { ...next, score: next.score + 1 }
+    return next.active.y > state.active.y ? { ...next, score: next.score + 1 } : next
   }
   if (input === "rotate") {
     const piece = rotated(state.active)
@@ -211,7 +238,9 @@ export function stepTetrisState(state: TetrisState, incoming: AgentSignal[], ran
     frame: state.frame + 1,
   }
   if (withNotices.over) return withNotices
+  if (withNotices.paused) return withNotices
   if (withNotices.clearAnimation) return stepClearAnimation(withNotices, random)
+  if (collides(withNotices.board, moved(withNotices.active, 0, 1))) return descend(withNotices, random)
   if (withNotices.frame % gravityFramesForLines(withNotices.lines) !== 0) return withNotices
   return descend(withNotices, random)
 }

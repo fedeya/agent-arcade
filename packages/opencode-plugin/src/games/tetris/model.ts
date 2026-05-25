@@ -32,14 +32,17 @@ export type ClearAnimation = {
   pendingLines: number
 }
 
-export type TetrisInput = "left" | "right" | "down" | "rotate" | "drop" | "hold"
+export type TetrisInput = "left" | "right" | "down" | "rotate" | "drop" | "hold" | "pause"
 
 export type TetrisState = {
   board: (CellKind | undefined)[][]
   active: Piece
   next: Piece
+  bag: CellKind[]
   hold?: CellKind
   canHold: boolean
+  paused: boolean
+  lockDelay?: number
   score: number
   lines: number
   over: boolean

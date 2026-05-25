@@ -58,6 +58,7 @@ Tetris controls:
 - `up`, `k`, or `space`: rotate.
 - `c`: hold the current piece.
 - `d`: hard drop.
+- `p`: pause or resume.
 - `r`: reset.
 - `m`: return to the game selector.
 - `q` or `esc`: quit.

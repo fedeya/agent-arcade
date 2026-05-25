@@ -31,6 +31,7 @@ export function TetrisGame() {
       { name: "agent-arcade.tetris-rotate", run: () => move("rotate") },
       { name: "agent-arcade.tetris-drop", run: () => move("drop") },
       { name: "agent-arcade.tetris-hold", run: () => move("hold") },
+      { name: "agent-arcade.tetris-pause", run: () => move("pause") },
       { name: "agent-arcade.reset", run: reset },
       { name: "agent-arcade.quit", run: arcade.closeGame },
       { name: "agent-arcade.menu", run: arcade.backToMenu },
@@ -43,6 +44,7 @@ export function TetrisGame() {
       { key: "up,k,space", cmd: "agent-arcade.tetris-rotate" },
       { key: "d", cmd: "agent-arcade.tetris-drop" },
       { key: "c", cmd: "agent-arcade.tetris-hold" },
+      { key: "p", cmd: "agent-arcade.tetris-pause" },
       { key: "a", cmd: "agent-arcade.approve-permission" },
       { key: "m", cmd: "agent-arcade.menu" },
       { key: "r", cmd: "agent-arcade.reset" },
@@ -67,7 +69,7 @@ export function TetrisGame() {
 
   onCleanup(() => clearInterval(timer))
 
-  const status = createMemo(() => (arcade.done() ? "AGENT DONE" : arcade.busy() ? "agent is cooking" : "practice mode"))
+  const status = createMemo(() => (game().paused ? "PAUSED" : arcade.done() ? "AGENT DONE" : arcade.busy() ? "agent is cooking" : "practice mode"))
   const header = createMemo(() => `TETRIS  score ${String(game().score).padStart(5, "0")}  high ${String(high()).padStart(5, "0")}  ${status()}`)
   const headerLeftWidth = createMemo(() => Math.max(0, 72 - (pendingPermission() ? permissionBadge.length : 0)))
   const lines = createMemo(() => drawTetris(game(), pendingPermission()))

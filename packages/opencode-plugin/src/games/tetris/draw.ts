@@ -120,7 +120,7 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
 
     if (y >= 0 && y < preview.length) row.push(text("   "), ...preview[y]!)
     if (y === 7) row.push(text("   "), sideText(`LINES ${String(state.lines).padStart(3, "0")}   LEVEL ${String(levelForLines(state.lines)).padStart(3, "0")}`))
-    if (y === 9) row.push(text("   "), sideText(pendingPermission ? "A approve permission" : "agent arcade", pendingPermission ? "#ffff00" : "#d0d0d0"))
+    if (y === 9) row.push(text("   "), sideText(state.paused ? "PAUSED" : pendingPermission ? "A approve permission" : "agent arcade", state.paused || pendingPermission ? "#ffff00" : "#d0d0d0"))
     if (y >= 10 && y < 10 + state.notices.length) {
       const notice = state.notices[y - 10]!
       row.push(text("   "), sideText(notice.text, noticeFg(notice.kind)))
@@ -133,9 +133,11 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
     text(
       state.over
         ? "top out. press r to retry or q to quit"
+        : state.paused
+          ? "paused - p resume - m menu - q quit"
         : pendingPermission
-          ? "move arrows/hjkl - up/space rotate - c hold - d drop - a approve - m menu - q quit"
-          : "move arrows/hjkl - up/space rotate - c hold - d drop - r reset - m menu - q quit",
+          ? "arrows/hjkl move - up/space rotate - c hold - d drop - p pause - a approve - m menu"
+          : "arrows/hjkl move - up/space rotate - c hold - d drop - p pause - r reset - m menu",
       state.over ? "#ff5f87" : "#d0d0d0",
     ),
   ])
