@@ -1,4 +1,5 @@
 import { boardCols, boardRows, type CellKind, type Piece, type TetrisState } from "./model"
+import { levelForLines } from "./state"
 
 export type TetrisSegment = {
   text: string
@@ -66,6 +67,7 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
 
     if (y >= 1 && y <= 4) row.push(text("   "), ...next[y - 1]!, pad(sideWidth - 8))
     if (y === 6) row.push(text("   "), sideText(`LINES ${String(state.lines).padStart(3, "0")}`))
+    if (y === 7) row.push(text("   "), sideText(`LEVEL ${String(levelForLines(state.lines)).padStart(3, "0")}`))
     if (y === 9) row.push(text("   "), sideText(pendingPermission ? "A approve permission" : "agent arcade", pendingPermission ? "#ffff00" : "#d0d0d0"))
     if (y >= 11 && y < 11 + state.notices.length) {
       const notice = state.notices[y - 11]!

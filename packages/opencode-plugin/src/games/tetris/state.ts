@@ -1,8 +1,17 @@
 import type { AgentSignal } from "../../arcade/types"
 import { boardCols, boardRows, pieceBlocks, pieceKinds, type CellKind, type Piece, type Point, type TetrisInput, type TetrisState } from "./model"
 
-const gravityFrames = 7
-const clearScores = [0, 100, 300, 500, 800]
+const linesPerLevel = 10
+const clearScores = [0, 40, 100, 300, 1200]
+const gravityFramesByLevel = [7, 6, 5, 4, 3, 2, 1]
+
+export function levelForLines(lines: number) {
+  return Math.floor(lines / linesPerLevel) + 1
+}
+
+function gravityFramesForLines(lines: number) {
+  return gravityFramesByLevel[levelForLines(lines) - 1] ?? 1
+}
 
 const emptyBoard = () => Array.from({ length: boardRows }, () => Array.from({ length: boardCols }, () => undefined as CellKind | undefined))
 
@@ -79,7 +88,7 @@ function lockPiece(state: TetrisState, random = Math.random): TetrisState {
   const active = { ...state.next, x: 3, y: 0 }
   const next = createPiece(random)
   const over = collides(result.board, active)
-  const lineScore = clearScores[result.cleared] ?? result.cleared * 250
+  const lineScore = (clearScores[result.cleared] ?? result.cleared * 250) * levelForLines(state.lines)
 
   return {
     ...state,
@@ -146,6 +155,6 @@ export function stepTetrisState(state: TetrisState, incoming: AgentSignal[], ran
     frame: state.frame + 1,
   }
   if (withNotices.over) return withNotices
-  if (withNotices.frame % gravityFrames !== 0) return withNotices
+  if (withNotices.frame % gravityFramesForLines(withNotices.lines) !== 0) return withNotices
   return descend(withNotices, random)
 }

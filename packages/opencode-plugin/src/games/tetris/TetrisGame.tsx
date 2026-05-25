@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import { createMemo, createSignal, onCleanup } from "solid-js"
+import { For, createMemo, createSignal, onCleanup } from "solid-js"
 import { useBindings } from "@opentui/keymap/solid"
 import { useTerminalDimensions } from "@opentui/solid"
 import { useArcade } from "../../arcade/state"
@@ -91,13 +91,15 @@ export function TetrisGame() {
         <text fg="#87ffaf">{header().slice(0, headerLeftWidth()).padEnd(headerLeftWidth())}</text>
         {pendingPermission() ? <text fg="#050505" bg="#ffff00">{permissionBadge}</text> : null}
       </box>
-      {lines().map((line) => (
-        <box flexDirection="row">
-          {line.map((segment) => (
-            <text fg={segment.fg} bg={segment.bg}>{segment.text}</text>
-          ))}
-        </box>
-      ))}
+      <For each={lines()}>
+        {(line) => (
+          <box flexDirection="row">
+            <For each={line}>
+              {(segment) => <text fg={segment.fg} bg={segment.bg}>{segment.text}</text>}
+            </For>
+          </box>
+        )}
+      </For>
     </box>
   )
 }
