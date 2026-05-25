@@ -1,4 +1,4 @@
-import { boardCols, boardRows, type CellKind, type Piece, type TetrisState } from "./model"
+import { boardCols, boardRows, pieceBlocks, type CellKind, type Piece, type TetrisState } from "./model"
 import { levelForLines } from "./state"
 
 export type TetrisSegment = {
@@ -20,9 +20,14 @@ const pieceColors: Record<CellKind, string> = {
 }
 
 const sideWidth = 32
+const miniCols = 6
+const miniRows = 4
+const miniInnerWidth = miniCols * 2
+const miniBoxWidth = miniInnerWidth + 2
 
 const text = (value: string, fg = "#d0d0d0"): TetrisSegment => ({ text: value, fg })
 const block = (kind: CellKind): TetrisSegment => ({ text: "  ", bg: pieceColors[kind] })
+const clearBlock = (): TetrisSegment => ({ text: "  ", bg: "#f8f8f2" })
 const empty = (): TetrisSegment => ({ text: "  " })
 const pad = (width: number): TetrisSegment => ({ text: " ".repeat(Math.max(0, width)) })
 
@@ -37,10 +42,32 @@ function pieceCells(piece: Piece) {
   return map
 }
 
-function drawNext(piece: Piece) {
-  const rows = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => undefined as CellKind | undefined))
-  for (const block of piece.blocks) rows[block.y]![block.x] = piece.kind
+function drawMiniPiece(piece?: Pick<Piece, "kind" | "blocks">) {
+  const rows = Array.from({ length: miniRows }, () => Array.from({ length: miniCols }, () => undefined as CellKind | undefined))
+  if (piece) {
+    const minX = Math.min(...piece.blocks.map((item) => item.x))
+    const maxX = Math.max(...piece.blocks.map((item) => item.x))
+    const minY = Math.min(...piece.blocks.map((item) => item.y))
+    const maxY = Math.max(...piece.blocks.map((item) => item.y))
+    const offsetX = Math.floor((miniCols - (maxX - minX + 1)) / 2) - minX
+    const offsetY = Math.ceil((miniRows - (maxY - minY + 1)) / 2) - minY
+
+    for (const block of piece.blocks) rows[block.y + offsetY]![block.x + offsetX] = piece.kind
+  }
   return rows.map((row) => row.map((cell) => (cell ? block(cell) : empty())))
+}
+
+function drawMiniBox(piece?: Pick<Piece, "kind" | "blocks">) {
+  const pieceRows = drawMiniPiece(piece)
+  return [
+    [text(`+${"-".repeat(miniInnerWidth)}+`)],
+    ...pieceRows.map((row) => [text("|"), ...row, text("|")]),
+    [text(`+${"-".repeat(miniInnerWidth)}+`)],
+  ]
+}
+
+function joinMiniBoxes(left: TetrisLine[], right: TetrisLine[]) {
+  return left.map((line, index) => [...line, text("  "), ...right[index]!, pad(sideWidth - (miniBoxWidth * 2 + 2))])
 }
 
 function noticeFg(kind: TetrisState["notices"][number]["kind"]) {
@@ -52,25 +79,31 @@ function noticeFg(kind: TetrisState["notices"][number]["kind"]) {
 
 export function drawTetris(state: TetrisState, pendingPermission: boolean) {
   const active = pieceCells(state.active)
-  const next = drawNext(state.next)
+  const preview = joinMiniBoxes(drawMiniBox(state.next), drawMiniBox(state.hold ? { kind: state.hold, blocks: pieceBlocks[state.hold] } : undefined))
+  const clearing = new Set(state.clearAnimation?.rows ?? [])
+  const showClear = state.clearAnimation ? state.clearAnimation.frame % 2 === 0 : false
   const lines: TetrisLine[] = []
 
-  lines.push([text(`+${"-".repeat(boardCols * 2)}+   `), sideText("NEXT")])
+  lines.push([text(`+${"-".repeat(boardCols * 2)}+   `), sideText("NEXT        HOLD")])
   for (let y = 0; y < boardRows; y++) {
     const row: TetrisLine = [text("|")]
     for (let x = 0; x < boardCols; x++) {
+      if (clearing.has(y)) {
+        row.push(showClear ? clearBlock() : empty())
+        continue
+      }
+
       const activeCell = active.get(`${x}:${y}`)
       const cell = activeCell ?? state.board[y]?.[x]
       row.push(cell ? block(cell) : empty())
     }
     row.push(text("|"))
 
-    if (y >= 1 && y <= 4) row.push(text("   "), ...next[y - 1]!, pad(sideWidth - 8))
-    if (y === 6) row.push(text("   "), sideText(`LINES ${String(state.lines).padStart(3, "0")}`))
-    if (y === 7) row.push(text("   "), sideText(`LEVEL ${String(levelForLines(state.lines)).padStart(3, "0")}`))
+    if (y >= 0 && y < preview.length) row.push(text("   "), ...preview[y]!)
+    if (y === 7) row.push(text("   "), sideText(`LINES ${String(state.lines).padStart(3, "0")}   LEVEL ${String(levelForLines(state.lines)).padStart(3, "0")}`))
     if (y === 9) row.push(text("   "), sideText(pendingPermission ? "A approve permission" : "agent arcade", pendingPermission ? "#ffff00" : "#d0d0d0"))
-    if (y >= 11 && y < 11 + state.notices.length) {
-      const notice = state.notices[y - 11]!
+    if (y >= 10 && y < 10 + state.notices.length) {
+      const notice = state.notices[y - 10]!
       row.push(text("   "), sideText(notice.text, noticeFg(notice.kind)))
     }
     lines.push(row)
@@ -82,8 +115,8 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
       state.over
         ? "top out. press r to retry or q to quit"
         : pendingPermission
-          ? "move arrows/hjkl - up/space rotate - d hard - a approve - m menu - q quit"
-          : "move arrows/hjkl - up/space rotate - d hard - r reset - m menu - q quit",
+          ? "move arrows/hjkl - up/space rotate - c hold - d drop - a approve - m menu - q quit"
+          : "move arrows/hjkl - up/space rotate - c hold - d drop - r reset - m menu - q quit",
       state.over ? "#ff5f87" : "#d0d0d0",
     ),
   ])

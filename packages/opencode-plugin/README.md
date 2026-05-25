@@ -56,6 +56,7 @@ Tetris controls:
 - `right` or `l`: move right.
 - `down` or `j`: soft drop.
 - `up`, `k`, or `space`: rotate.
+- `c`: hold the current piece.
 - `d`: hard drop.
 - `r`: reset.
 - `m`: return to the game selector.

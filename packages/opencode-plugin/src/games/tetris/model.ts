@@ -25,17 +25,27 @@ export type Notice = {
   ttl: number
 }
 
-export type TetrisInput = "left" | "right" | "down" | "rotate" | "drop"
+export type ClearAnimation = {
+  rows: number[]
+  frame: number
+  pendingScore: number
+  pendingLines: number
+}
+
+export type TetrisInput = "left" | "right" | "down" | "rotate" | "drop" | "hold"
 
 export type TetrisState = {
   board: (CellKind | undefined)[][]
   active: Piece
   next: Piece
+  hold?: CellKind
+  canHold: boolean
   score: number
   lines: number
   over: boolean
   frame: number
   notices: Notice[]
+  clearAnimation?: ClearAnimation
 }
 
 export const pieceKinds: CellKind[] = ["i", "j", "l", "o", "s", "t", "z"]

@@ -30,6 +30,7 @@ export function TetrisGame() {
       { name: "agent-arcade.tetris-down", run: () => move("down") },
       { name: "agent-arcade.tetris-rotate", run: () => move("rotate") },
       { name: "agent-arcade.tetris-drop", run: () => move("drop") },
+      { name: "agent-arcade.tetris-hold", run: () => move("hold") },
       { name: "agent-arcade.reset", run: reset },
       { name: "agent-arcade.quit", run: arcade.closeGame },
       { name: "agent-arcade.menu", run: arcade.backToMenu },
@@ -41,6 +42,7 @@ export function TetrisGame() {
       { key: "down,j", cmd: "agent-arcade.tetris-down" },
       { key: "up,k,space", cmd: "agent-arcade.tetris-rotate" },
       { key: "d", cmd: "agent-arcade.tetris-drop" },
+      { key: "c", cmd: "agent-arcade.tetris-hold" },
       { key: "a", cmd: "agent-arcade.approve-permission" },
       { key: "m", cmd: "agent-arcade.menu" },
       { key: "r", cmd: "agent-arcade.reset" },
@@ -76,7 +78,7 @@ export function TetrisGame() {
 
   return (
     <box
-      width={Math.min(dim().width, 78)}
+      width={Math.min(dim().width, 96)}
       maxWidth={dim().width}
       border
       borderColor={borderColor()}
@@ -91,15 +93,17 @@ export function TetrisGame() {
         <text fg="#87ffaf">{header().slice(0, headerLeftWidth()).padEnd(headerLeftWidth())}</text>
         {pendingPermission() ? <text fg="#050505" bg="#ffff00">{permissionBadge}</text> : null}
       </box>
-      <For each={lines()}>
-        {(line) => (
-          <box flexDirection="row">
-            <For each={line}>
-              {(segment) => <text fg={segment.fg} bg={segment.bg}>{segment.text}</text>}
-            </For>
-          </box>
-        )}
-      </For>
+      <box flexDirection="column" paddingTop={1}>
+        <For each={lines()}>
+          {(line) => (
+            <box flexDirection="row">
+              <For each={line}>
+                {(segment) => <text fg={segment.fg} bg={segment.bg}>{segment.text}</text>}
+              </For>
+            </box>
+          )}
+        </For>
+      </box>
     </box>
   )
 }
