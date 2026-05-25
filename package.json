@@ -5,7 +5,11 @@
   "type": "module",
   "workspaces": ["packages/*"],
   "scripts": {
-    "typecheck": "bun run --filter '*' typecheck"
+    "typecheck": "bun run --filter '*' typecheck",
+    "plugin:pack": "bun run --filter opencode-agent-arcade pack",
+    "plugin:publish:dry": "bun run --filter opencode-agent-arcade publish:dry",
+    "plugin:publish": "bun run --filter opencode-agent-arcade publish:latest",
+    "plugin:publish:alpha": "bun run --filter opencode-agent-arcade publish:alpha"
   },
   "devDependencies": {
     "@types/node": "^24.12.2",

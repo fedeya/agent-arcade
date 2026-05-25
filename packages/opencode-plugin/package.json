@@ -1,15 +1,50 @@
 {
-  "name": "@agent-arcade/opencode",
-  "private": true,
+  "name": "opencode-agent-arcade",
+  "version": "0.1.0",
+  "description": "An OpenCode TUI plugin that turns agent wait time into a tiny runner game.",
   "type": "module",
+  "main": "./src/tui.tsx",
+  "exports": {
+    ".": "./src/tui.tsx",
+    "./tui": "./src/tui.tsx"
+  },
+  "oc-plugin": ["tui"],
+  "files": ["src", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fedeya/agent-arcade.git",
+    "directory": "packages/opencode-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/fedeya/agent-arcade/issues"
+  },
+  "homepage": "https://github.com/fedeya/agent-arcade#readme",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tui",
+    "agent",
+    "arcade",
+    "runner-game"
+  ],
+  "author": "Federico Minaya",
+  "license": "MIT",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pack": "npm pack --dry-run",
+    "publish:dry": "npm publish --dry-run --access public",
+    "publish:latest": "npm publish --access public",
+    "publish:alpha": "npm publish --access public --tag alpha",
+    "prepublishOnly": "bun run typecheck"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "latest",
-    "@opentui/core": "latest",
-    "@opentui/keymap": "latest",
-    "@opentui/solid": "latest",
-    "solid-js": "1.9.12"
+    "@opencode-ai/plugin": "^1.15.10",
+    "@opentui/core": "^0.2.15",
+    "@opentui/keymap": "^0.2.15",
+    "@opentui/solid": "^0.2.15",
+    "solid-js": "^1.9.12"
   }
 }

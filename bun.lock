@@ -10,19 +10,18 @@
       },
     },
     "packages/opencode-plugin": {
-      "name": "@agent-arcade/opencode-plugin",
+      "name": "opencode-agent-arcade",
+      "version": "0.1.0",
       "dependencies": {
-        "@opencode-ai/plugin": "latest",
-        "@opentui/core": "latest",
-        "@opentui/keymap": "latest",
-        "@opentui/solid": "latest",
-        "solid-js": "1.9.12",
+        "@opencode-ai/plugin": "^1.15.10",
+        "@opentui/core": "^0.2.15",
+        "@opentui/keymap": "^0.2.15",
+        "@opentui/solid": "^0.2.15",
+        "solid-js": "^1.9.12",
       },
     },
   },
   "packages": {
-    "@agent-arcade/opencode-plugin": ["@agent-arcade/opencode-plugin@workspace:packages/opencode-plugin"],
-
     "@ampproject/remapping": ["@ampproject/remapping@2.3.0", "", { "dependencies": { "@jridgewell/gen-mapping": "^0.3.5", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
@@ -228,6 +227,8 @@
     "node-gyp-build-optional-packages": ["node-gyp-build-optional-packages@5.2.2", "", { "dependencies": { "detect-libc": "^2.0.1" }, "bin": { "node-gyp-build-optional-packages": "bin.js", "node-gyp-build-optional-packages-optional": "optional.js", "node-gyp-build-optional-packages-test": "build-test.js" } }, "sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw=="],
 
     "node-releases": ["node-releases@2.0.46", "", {}, "sha512-GYVXHE2KnrzAfsAjl4uP++evGFCrAU1jta4ubEjIG7YWt/64Gqv66a30yKwWczVjA6j3bM4nBwH7Pk1JmDHaxQ=="],
+
+    "opencode-agent-arcade": ["opencode-agent-arcade@workspace:packages/opencode-plugin"],
 
     "p-limit": ["p-limit@2.3.0", "", { "dependencies": { "p-try": "^2.0.0" } }, "sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w=="],
 
