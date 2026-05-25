@@ -64,35 +64,6 @@ The npm package exports the TUI plugin through `./tui`:
 
 OpenCode resolves npm TUI plugins through that `./tui` export.
 
-## Publish
-
-First release:
-
-```sh
-bun install
-bun run typecheck
-cd packages/opencode-plugin
-npm pack --dry-run
-npm publish --access public
-```
-
-Alpha release instead of latest:
-
-```sh
-cd packages/opencode-plugin
-npm publish --access public --tag alpha
-```
-
-Version bump for the next release:
-
-```sh
-cd packages/opencode-plugin
-npm version patch
-npm publish --access public
-```
-
-The package name is `opencode-agent-arcade`.
-
 ## Status
 
 This is an alpha plugin. It is ready for people to try, but expect rough edges while OpenCode's TUI plugin surface keeps evolving.

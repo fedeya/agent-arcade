@@ -36,14 +36,4 @@ Optional auto-start:
 
 The `a` binding only replies to an active OpenCode permission prompt with `once`. Review what the agent is asking for before approving.
 
-## Publish
-
-```sh
-bun install
-bun run typecheck
-cd packages/opencode-plugin
-npm pack --dry-run
-npm publish --access public
-```
-
 The package exports its TUI entrypoint as `./tui` and is intended for OpenCode's TUI plugin loader.
