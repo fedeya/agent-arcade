@@ -8,22 +8,39 @@ import { formatTool } from "./games/runner"
 
 type AgentArcadeOptions = {
   autoStart?: boolean
+  autoStartGame?: AutoStartGame
 }
 
+type AutoStartGame = "last" | "runner" | "tetris" | "random"
+
 const isArcadeGame = (value: unknown): value is ArcadeGame => value === "runner" || value === "tetris"
+const isAutoStartGame = (value: unknown): value is AutoStartGame => value === "last" || value === "runner" || value === "tetris" || value === "random"
 
 const plugin: TuiPluginModule & { id: string } = {
   id: "agent-arcade",
   tui: async (api, options) => {
     const pluginOptions = options as AgentArcadeOptions | undefined
     const defaultAutoStart = pluginOptions?.autoStart === true
+    const autoStartGame = isAutoStartGame(pluginOptions?.autoStartGame) ? pluginOptions.autoStartGame : "last"
+    const storedGame = api.kv.get("agent_arcade_game", undefined)
     const [open, setOpen] = createSignal(false)
     const [busy, setBusy] = createSignal(false)
     const [done, setDone] = createSignal(false)
     const [pendingPermission, setPendingPermission] = createSignal<PendingPermission | undefined>()
     const [autoStart, setAutoStart] = createSignal(api.kv.get("agent_arcade_auto_start", api.kv.get("wait_game_auto_start", defaultAutoStart)) === true)
-    const [selectedGame, setSelectedGame] = createSignal<ArcadeGame>(isArcadeGame(api.kv.get("agent_arcade_game", undefined)) ? api.kv.get("agent_arcade_game", "tetris") : "tetris")
+    const [selectedGame, setSelectedGame] = createSignal<ArcadeGame>(isArcadeGame(storedGame) ? storedGame : "tetris")
     const feed = createSignalFeed()
+
+    const chooseAutoStartGame = (): ArcadeGame => {
+      if (autoStartGame === "runner" || autoStartGame === "tetris") return autoStartGame
+      if (autoStartGame === "random") return Math.random() < 0.5 ? "runner" : "tetris"
+      return selectedGame()
+    }
+
+    const openAutoStartGame = () => {
+      setSelectedGame(chooseAutoStartGame())
+      setOpen(true)
+    }
 
     api.event.on("session.status", (event) => {
       const sessionID = event.properties.sessionID
@@ -34,7 +51,7 @@ const plugin: TuiPluginModule & { id: string } = {
         setDone(false)
         if (!wasBusy) {
           feed.clearFeed()
-          if (autoStart()) setOpen(true)
+          if (autoStart()) openAutoStartGame()
           feed.push("agent started cooking", "good")
         }
       }
@@ -42,7 +59,7 @@ const plugin: TuiPluginModule & { id: string } = {
         const wasBusy = busy()
         setBusy(true)
         setDone(false)
-        if (autoStart() && !wasBusy) setOpen(true)
+        if (autoStart() && !wasBusy) openAutoStartGame()
         feed.pushOnce(`session:${sessionID}:retry`, "agent hit retry lore", "warn", 5000)
       }
       if (status === "idle") {

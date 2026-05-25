@@ -24,6 +24,17 @@ Optional auto-start:
 }
 ```
 
+Auto-start opens the last selected game by default. You can choose a specific game or randomize it:
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [["opencode-agent-arcade", { "autoStart": true, "autoStartGame": "random" }]]
+}
+```
+
+`autoStartGame` accepts `last`, `runner`, `tetris`, or `random`.
+
 ## Controls
 
 - `/agent-arcade`: open the native game selector, or close the active game overlay.

@@ -69,7 +69,3 @@ OpenCode resolves npm TUI plugins through that `./tui` export.
 ## Status
 
 This is an alpha plugin. It is ready for people to try, but expect rough edges while OpenCode's TUI plugin surface keeps evolving.
-
-Tiny arcade fact: the runner gremlins are powered by agent activity, shell spells, diff gremlins, and radar pings.
-
-Random arcade whisper: gravity is `0.42`, permissions have tiny IDs, and every floater eventually fades.
