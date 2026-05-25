@@ -28,6 +28,7 @@ const miniBoxWidth = miniInnerWidth + 2
 const text = (value: string, fg = "#d0d0d0"): TetrisSegment => ({ text: value, fg })
 const block = (kind: CellKind): TetrisSegment => ({ text: "  ", bg: pieceColors[kind] })
 const clearBlock = (): TetrisSegment => ({ text: "  ", bg: "#f8f8f2" })
+const ghostBlock = (): TetrisSegment => ({ text: "  ", bg: "#262626" })
 const empty = (): TetrisSegment => ({ text: "  " })
 const pad = (width: number): TetrisSegment => ({ text: " ".repeat(Math.max(0, width)) })
 
@@ -40,6 +41,22 @@ function pieceCells(piece: Piece) {
   const map = new Map<string, CellKind>()
   for (const block of piece.blocks) map.set(`${piece.x + block.x}:${piece.y + block.y}`, piece.kind)
   return map
+}
+
+function collides(board: TetrisState["board"], piece: Piece) {
+  return piece.blocks.some((block) => {
+    const x = piece.x + block.x
+    const y = piece.y + block.y
+    if (x < 0 || x >= boardCols || y >= boardRows) return true
+    if (y < 0) return false
+    return board[y]?.[x] !== undefined
+  })
+}
+
+function ghostPiece(board: TetrisState["board"], piece: Piece) {
+  let ghost = piece
+  while (!collides(board, { ...ghost, y: ghost.y + 1 })) ghost = { ...ghost, y: ghost.y + 1 }
+  return ghost
 }
 
 function drawMiniPiece(piece?: Pick<Piece, "kind" | "blocks">) {
@@ -79,6 +96,7 @@ function noticeFg(kind: TetrisState["notices"][number]["kind"]) {
 
 export function drawTetris(state: TetrisState, pendingPermission: boolean) {
   const active = pieceCells(state.active)
+  const ghost = state.over || state.clearAnimation ? undefined : pieceCells(ghostPiece(state.board, state.active))
   const preview = joinMiniBoxes(drawMiniBox(state.next), drawMiniBox(state.hold ? { kind: state.hold, blocks: pieceBlocks[state.hold] } : undefined))
   const clearing = new Set(state.clearAnimation?.rows ?? [])
   const showClear = state.clearAnimation ? state.clearAnimation.frame % 2 === 0 : false
@@ -96,6 +114,7 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
       const activeCell = active.get(`${x}:${y}`)
       const cell = activeCell ?? state.board[y]?.[x]
       row.push(cell ? block(cell) : empty())
+      if (!cell && ghost?.has(`${x}:${y}`)) row[row.length - 1] = ghostBlock()
     }
     row.push(text("|"))
 
