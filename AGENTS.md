@@ -10,4 +10,4 @@
 - `.opencode/package.json`, `.opencode/package-lock.json`, `.opencode/node_modules`, and related local files are ignored support files, not workspace source.
 - This is a Solid/OpenTUI TSX plugin: keep the `/** @jsxImportSource @opentui/solid */` pragma on TSX files that use OpenTUI JSX.
 - The runner game is wired as `plugin.tsx -> games/runner/index.ts -> RunnerOverlay -> RunnerGame`; OpenCode agent/session events become in-game floaters through `arcade/feed.ts`.
-- The overlay opens via the command palette slash command `/wait-game` or `ctrl+shift+g`; in-game bindings are `space/up/k` jump, `r` reset, and `q/esc` quit.
+- The overlay opens via the command palette slash command `/agent-arcade` or `ctrl+shift+g`; in-game bindings are `space/up/k` jump, `r` reset, and `q/esc` quit.

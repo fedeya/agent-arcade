@@ -1,3 +1,3 @@
-# opencode-doom
+# Agent Arcade for OpenCode
 
-Permission flow test.
+An OpenCode TUI plugin that turns agent waiting time into a small arcade overlay.

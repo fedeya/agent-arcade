@@ -16,7 +16,7 @@ export function RunnerGame(props: GameProps) {
   const panelWidth = createMemo(() => Math.min(Math.max(1, Math.floor(dim().width)), maxPanelWidth))
   const worldWidth = createMemo(() => Math.max(1, panelWidth() - 6))
   const [game, setGame] = createSignal(initialRunnerState(worldWidth()))
-  const [high, setHigh] = createSignal(props.api.kv.get("wait_game_high_score", 0))
+  const [high, setHigh] = createSignal(props.api.kv.get("agent_arcade_high_score", props.api.kv.get("wait_game_high_score", 0)))
 
   const jump = () => {
     setGame((state) => {
@@ -33,16 +33,16 @@ export function RunnerGame(props: GameProps) {
   useBindings(() => ({
     enabled: () => true,
     commands: [
-      { name: "wait-game.jump", run: jump },
-      { name: "wait-game.reset", run: reset },
-      { name: "wait-game.quit", run: props.close },
-      { name: "wait-game.approve-permission", run: props.approvePermission },
+      { name: "agent-arcade.jump", run: jump },
+      { name: "agent-arcade.reset", run: reset },
+      { name: "agent-arcade.quit", run: props.close },
+      { name: "agent-arcade.approve-permission", run: props.approvePermission },
     ],
     bindings: [
-      { key: "space,up,k", cmd: "wait-game.jump" },
-      { key: "a", cmd: "wait-game.approve-permission" },
-      { key: "r", cmd: "wait-game.reset" },
-      { key: "escape,q", cmd: "wait-game.quit" },
+      { key: "space,up,k", cmd: "agent-arcade.jump" },
+      { key: "a", cmd: "agent-arcade.approve-permission" },
+      { key: "r", cmd: "agent-arcade.reset" },
+      { key: "escape,q", cmd: "agent-arcade.quit" },
     ],
   }))
 
@@ -54,7 +54,7 @@ export function RunnerGame(props: GameProps) {
       const next = stepRunnerState(state, incoming, worldWidth())
       if (next.score > high()) {
         setHigh(next.score)
-        props.api.kv.set("wait_game_high_score", next.score)
+        props.api.kv.set("agent_arcade_high_score", next.score)
       }
       return next
     })

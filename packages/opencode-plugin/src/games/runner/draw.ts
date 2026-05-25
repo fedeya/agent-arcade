@@ -33,7 +33,7 @@ export function drawRunner(state: RunnerState, pendingPermission: boolean, cols:
 
   const help = pendingPermission
     ? "a approve once - space/up/k jump - r reset - q/esc quit"
-    : "space/up/k jump - r reset - q/esc quit - /wait-game"
+    : "space/up/k jump - r reset - q/esc quit - /agent-arcade"
   return [
     ...rows.map((line) => line.join("")),
     "",

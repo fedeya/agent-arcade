@@ -5,20 +5,20 @@ import { createSignalFeed } from "./arcade/feed"
 import type { PendingPermission } from "./arcade/types"
 import { RunnerOverlay, formatTool } from "./games/runner"
 
-type WaitGameOptions = {
+type AgentArcadeOptions = {
   autoStart?: boolean
 }
 
 const plugin: TuiPluginModule & { id: string } = {
-  id: "wait-game",
+  id: "agent-arcade",
   tui: async (api, options) => {
-    const pluginOptions = options as WaitGameOptions | undefined
+    const pluginOptions = options as AgentArcadeOptions | undefined
     const defaultAutoStart = pluginOptions?.autoStart === true
     const [open, setOpen] = createSignal(false)
     const [busy, setBusy] = createSignal(false)
     const [done, setDone] = createSignal(false)
     const [pendingPermission, setPendingPermission] = createSignal<PendingPermission | undefined>()
-    const [autoStart, setAutoStart] = createSignal(api.kv.get("wait_game_auto_start", defaultAutoStart) === true)
+    const [autoStart, setAutoStart] = createSignal(api.kv.get("agent_arcade_auto_start", api.kv.get("wait_game_auto_start", defaultAutoStart)) === true)
     const feed = createSignalFeed()
 
     api.event.on("session.status", (event) => {
@@ -109,10 +109,10 @@ const plugin: TuiPluginModule & { id: string } = {
     const toggleAutoStart = () => {
       setAutoStart((value) => {
         const next = !value
-        api.kv.set("wait_game_auto_start", next)
+        api.kv.set("agent_arcade_auto_start", next)
         api.ui.toast({
           variant: next ? "success" : "info",
-          message: `Wait game auto-start ${next ? "enabled" : "disabled"}`,
+          message: `Agent Arcade auto-start ${next ? "enabled" : "disabled"}`,
         })
         return next
       })
@@ -140,23 +140,23 @@ const plugin: TuiPluginModule & { id: string } = {
     api.keymap.registerLayer({
       commands: [
         {
-          name: "wait-game.open",
-          title: "Wait Game",
-          category: "Plugin",
+          name: "agent-arcade.open",
+          title: "Open Arcade",
+          category: "Agent Arcade",
           namespace: "palette",
-          slashName: "wait-game",
+          slashName: "agent-arcade",
           run: openGame,
         },
         {
-          name: "wait-game.auto-start",
-          title: "Toggle Wait Game Auto-start",
-          category: "Plugin",
+          name: "agent-arcade.auto-start",
+          title: "Toggle Auto-start",
+          category: "Agent Arcade",
           namespace: "palette",
-          slashName: "wait-game-auto",
+          slashName: "agent-arcade-auto",
           run: toggleAutoStart,
         },
       ],
-      bindings: [{ key: "ctrl+shift+g", cmd: "wait-game.open" }],
+      bindings: [{ key: "ctrl+shift+g", cmd: "agent-arcade.open" }],
     })
   },
 }

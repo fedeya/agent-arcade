@@ -22,7 +22,7 @@ export function formatTool(part: any) {
 
   if (tool === "bash") {
     const command = inputString(input, ["command", "cmd"])
-    return `${status === "completed" ? "shell done" : "shell goblin"}${command ? `: ${command}` : ""}`
+    return `${status === "completed" ? "shell done" : "shell spell"}${command ? `: ${command}` : ""}`
   }
 
   if (tool === "edit" || tool === "write") {
