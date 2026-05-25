@@ -1,6 +1,6 @@
 # Agent Arcade for OpenCode
 
-Agent Arcade is an experimental OpenCode TUI plugin that turns agent wait time into a tiny runner game.
+Agent Arcade is an experimental OpenCode TUI plugin that turns agent wait time into a tiny terminal arcade game.
 
 ## Install
 
@@ -29,7 +29,11 @@ Optional auto-start:
 - `/agent-arcade`: open or close the overlay.
 - `/agent-arcade-auto`: toggle auto-start.
 - `ctrl+shift+g`: open or close the overlay.
-- `space`, `up`, or `k`: jump.
+- `left` or `h`: move left.
+- `right` or `l`: move right.
+- `down` or `j`: soft drop.
+- `up`, `k`, or `space`: rotate.
+- `d`: hard drop.
 - `r`: reset.
 - `q` or `esc`: quit.
 - `a`: approve the currently pending OpenCode permission once.
