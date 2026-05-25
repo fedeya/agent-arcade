@@ -32,8 +32,8 @@ export function drawRunner(state: RunnerState, pendingPermission: boolean, cols:
   rows[floorRow] = Array.from({ length: inner }, (_, i) => (i % 4 === state.frame % 4 ? "_" : "-"))
 
   const help = pendingPermission
-    ? "a approve once - space/up/k jump - r reset - q/esc quit"
-    : "space/up/k jump - r reset - q/esc quit - /agent-arcade"
+    ? "a approve once - space/up/k jump - r reset - m menu - q/esc quit"
+    : "space/up/k jump - r reset - m menu - q/esc quit"
   return [
     ...rows.map((line) => line.join("")),
     "",
