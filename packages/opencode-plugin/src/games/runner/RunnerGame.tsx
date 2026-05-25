@@ -2,7 +2,7 @@
 import { createMemo, createSignal, onCleanup } from "solid-js"
 import { useTerminalDimensions } from "@opentui/solid"
 import { useBindings } from "@opentui/keymap/solid"
-import type { GameProps } from "../../arcade/types"
+import { useArcade } from "../../arcade/state"
 import { drawRunner } from "./draw"
 import { jumpVelocity, tickMs } from "./model"
 import { initialRunnerState, stepRunnerState } from "./state"
@@ -11,15 +11,17 @@ const maxPanelWidth = 120
 const permissionBadge = " PERMISSION: PRESS A "
 const permissionBorderColors = ["#ff005f", "#ffaf00", "#ffff00", "#00ff87", "#00afff", "#af5fff"]
 
-export function RunnerGame(props: GameProps) {
+export function RunnerGame() {
+  const arcade = useArcade()
   const dim = useTerminalDimensions()
   const panelWidth = createMemo(() => Math.min(Math.max(1, Math.floor(dim().width)), maxPanelWidth))
   const worldWidth = createMemo(() => Math.max(1, panelWidth() - 6))
-  const [game, setGame] = createSignal(initialRunnerState(worldWidth()))
-  const [high, setHigh] = createSignal(props.api.kv.get("agent_arcade_high_score", props.api.kv.get("wait_game_high_score", 0)))
+  const game = () => arcade.runnerGame() ?? arcade.ensureRunnerGame(worldWidth())
+  const [high, setHigh] = createSignal(arcade.api.kv.get("agent_arcade_high_score", arcade.api.kv.get("wait_game_high_score", 0)))
 
   const jump = () => {
-    setGame((state) => {
+    arcade.setRunnerGame((state) => {
+      state = state ?? initialRunnerState(worldWidth())
       if (state.over) return state
       if (state.playerY > 0) return state
       return { ...state, velocity: jumpVelocity }
@@ -27,7 +29,7 @@ export function RunnerGame(props: GameProps) {
   }
 
   const reset = () => {
-    setGame(initialRunnerState(worldWidth()))
+    arcade.resetRunner(worldWidth())
   }
 
   useBindings(() => ({
@@ -35,9 +37,9 @@ export function RunnerGame(props: GameProps) {
     commands: [
       { name: "agent-arcade.jump", run: jump },
       { name: "agent-arcade.reset", run: reset },
-      { name: "agent-arcade.quit", run: props.close },
-      { name: "agent-arcade.menu", run: () => props.backToMenu?.() },
-      { name: "agent-arcade.approve-permission", run: props.approvePermission },
+      { name: "agent-arcade.quit", run: arcade.closeGame },
+      { name: "agent-arcade.menu", run: arcade.backToMenu },
+      { name: "agent-arcade.approve-permission", run: arcade.approvePermission },
     ],
     bindings: [
       { key: "space,up,k", cmd: "agent-arcade.jump" },
@@ -49,14 +51,15 @@ export function RunnerGame(props: GameProps) {
   }))
 
   const timer = setInterval(() => {
-    const incoming = props.feed()
-    if (incoming.length > 0) props.clearFeed()
+    const incoming = arcade.feed()
+    if (incoming.length > 0) arcade.clearFeed()
 
-    setGame((state) => {
+    arcade.setRunnerGame((state) => {
+      state = state ?? initialRunnerState(worldWidth())
       const next = stepRunnerState(state, incoming, worldWidth())
       if (next.score > high()) {
         setHigh(next.score)
-        props.api.kv.set("agent_arcade_high_score", next.score)
+        arcade.api.kv.set("agent_arcade_high_score", next.score)
       }
       return next
     })
@@ -64,8 +67,8 @@ export function RunnerGame(props: GameProps) {
 
   onCleanup(() => clearInterval(timer))
 
-  const pendingPermission = createMemo(() => props.pendingPermission() !== undefined)
-  const status = createMemo(() => (props.done() ? "AGENT DONE. GO PRETEND YOU WERE WORKING." : props.busy() ? "agent is cooking..." : "no active agent, practice mode"))
+  const pendingPermission = createMemo(() => arcade.pendingPermission() !== undefined)
+  const status = createMemo(() => (arcade.done() ? "AGENT DONE. GO PRETEND YOU WERE WORKING." : arcade.busy() ? "agent is cooking..." : "no active agent, practice mode"))
   const header = createMemo(() => `score ${String(game().score).padStart(4, "0")}  high ${String(high()).padStart(4, "0")}  ${status()}`)
   const headerLeftWidth = createMemo(() => Math.max(0, worldWidth() - (pendingPermission() ? permissionBadge.length : 0)))
   const lines = createMemo(() => drawRunner(game(), pendingPermission(), worldWidth()))

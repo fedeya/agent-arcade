@@ -4,19 +4,16 @@ import { RGBA } from "@opentui/core"
 import { useTerminalDimensions } from "@opentui/solid"
 import { RunnerGame } from "../games/runner"
 import { TetrisGame } from "../games/tetris"
-import type { ArcadeGame, GameProps } from "./types"
+import { useArcade } from "./state"
 
-type ArcadeOverlayProps = GameProps & {
-  game: ArcadeGame
-}
-
-export function ArcadeOverlay(props: ArcadeOverlayProps) {
+export function ArcadeOverlay() {
+  const arcade = useArcade()
   const dim = useTerminalDimensions()
 
   onMount(() => {
-    const focused = props.api.renderer.currentFocusedRenderable
+    const focused = arcade.api.renderer.currentFocusedRenderable
     focused?.blur()
-    const popMode = props.api.mode.push("modal")
+    const popMode = arcade.api.mode.push("modal")
     const blurAgain = setTimeout(() => focused?.blur(), 0)
 
     onCleanup(() => {
@@ -37,11 +34,11 @@ export function ArcadeOverlay(props: ArcadeOverlayProps) {
       alignItems="center"
       paddingTop={Math.max(1, Math.floor(dim().height / 5))}
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
-      onMouseUp={props.close}
+      onMouseUp={arcade.closeGame}
     >
       <box onMouseUp={(event: { stopPropagation(): void }) => event.stopPropagation()} backgroundColor="#050505">
-        {props.game === "runner" ? <RunnerGame {...props} /> : null}
-        {props.game === "tetris" ? <TetrisGame {...props} /> : null}
+        {arcade.selectedGame() === "runner" ? <RunnerGame /> : null}
+        {arcade.selectedGame() === "tetris" ? <TetrisGame /> : null}
       </box>
     </box>
   )

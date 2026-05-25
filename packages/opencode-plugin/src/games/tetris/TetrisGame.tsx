@@ -2,7 +2,7 @@
 import { createMemo, createSignal, onCleanup } from "solid-js"
 import { useBindings } from "@opentui/keymap/solid"
 import { useTerminalDimensions } from "@opentui/solid"
-import type { GameProps } from "../../arcade/types"
+import { useArcade } from "../../arcade/state"
 import { drawTetris } from "./draw"
 import { tickMs, type TetrisInput } from "./model"
 import { applyTetrisInput, initialTetrisState, stepTetrisState } from "./state"
@@ -10,15 +10,16 @@ import { applyTetrisInput, initialTetrisState, stepTetrisState } from "./state"
 const permissionBadge = " PERMISSION: PRESS A "
 const permissionBorderColors = ["#ff005f", "#ffaf00", "#ffff00", "#00ff87", "#00afff", "#af5fff"]
 
-export function TetrisGame(props: GameProps) {
+export function TetrisGame() {
+  const arcade = useArcade()
   const dim = useTerminalDimensions()
-  const [game, setGame] = createSignal(initialTetrisState())
-  const [high, setHigh] = createSignal(props.api.kv.get("agent_arcade_tetris_high_score", 0))
-  const pendingPermission = createMemo(() => props.pendingPermission() !== undefined)
+  const game = () => arcade.tetrisGame() ?? arcade.ensureTetrisGame()
+  const [high, setHigh] = createSignal(arcade.api.kv.get("agent_arcade_tetris_high_score", 0))
+  const pendingPermission = createMemo(() => arcade.pendingPermission() !== undefined)
 
-  const reset = () => setGame(initialTetrisState())
+  const reset = () => arcade.resetTetris()
   const move = (input: TetrisInput) => {
-    setGame((state) => applyTetrisInput(state, input))
+    arcade.setTetrisGame((state) => applyTetrisInput(state ?? initialTetrisState(), input))
   }
 
   useBindings(() => ({
@@ -30,9 +31,9 @@ export function TetrisGame(props: GameProps) {
       { name: "agent-arcade.tetris-rotate", run: () => move("rotate") },
       { name: "agent-arcade.tetris-drop", run: () => move("drop") },
       { name: "agent-arcade.reset", run: reset },
-      { name: "agent-arcade.quit", run: props.close },
-      { name: "agent-arcade.menu", run: () => props.backToMenu?.() },
-      { name: "agent-arcade.approve-permission", run: props.approvePermission },
+      { name: "agent-arcade.quit", run: arcade.closeGame },
+      { name: "agent-arcade.menu", run: arcade.backToMenu },
+      { name: "agent-arcade.approve-permission", run: arcade.approvePermission },
     ],
     bindings: [
       { key: "left,h", cmd: "agent-arcade.tetris-left" },
@@ -48,14 +49,15 @@ export function TetrisGame(props: GameProps) {
   }))
 
   const timer = setInterval(() => {
-    const incoming = props.feed()
-    if (incoming.length > 0) props.clearFeed()
+    const incoming = arcade.feed()
+    if (incoming.length > 0) arcade.clearFeed()
 
-    setGame((state) => {
+    arcade.setTetrisGame((state) => {
+      state = state ?? initialTetrisState()
       const next = stepTetrisState(state, incoming)
       if (next.score > high()) {
         setHigh(next.score)
-        props.api.kv.set("agent_arcade_tetris_high_score", next.score)
+        arcade.api.kv.set("agent_arcade_tetris_high_score", next.score)
       }
       return next
     })
@@ -63,7 +65,7 @@ export function TetrisGame(props: GameProps) {
 
   onCleanup(() => clearInterval(timer))
 
-  const status = createMemo(() => (props.done() ? "AGENT DONE" : props.busy() ? "agent is cooking" : "practice mode"))
+  const status = createMemo(() => (arcade.done() ? "AGENT DONE" : arcade.busy() ? "agent is cooking" : "practice mode"))
   const header = createMemo(() => `TETRIS  score ${String(game().score).padStart(5, "0")}  high ${String(high()).padStart(5, "0")}  ${status()}`)
   const headerLeftWidth = createMemo(() => Math.max(0, 72 - (pendingPermission() ? permissionBadge.length : 0)))
   const lines = createMemo(() => drawTetris(game(), pendingPermission()))

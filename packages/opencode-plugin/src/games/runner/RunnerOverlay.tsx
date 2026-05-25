@@ -2,16 +2,17 @@
 import { onCleanup, onMount } from "solid-js"
 import { RGBA } from "@opentui/core"
 import { useTerminalDimensions } from "@opentui/solid"
-import type { GameProps } from "../../arcade/types"
+import { useArcade } from "../../arcade/state"
 import { RunnerGame } from "./RunnerGame"
 
-export function RunnerOverlay(props: GameProps) {
+export function RunnerOverlay() {
+  const arcade = useArcade()
   const dim = useTerminalDimensions()
 
   onMount(() => {
-    const focused = props.api.renderer.currentFocusedRenderable
+    const focused = arcade.api.renderer.currentFocusedRenderable
     focused?.blur()
-    const popMode = props.api.mode.push("modal")
+    const popMode = arcade.api.mode.push("modal")
     const blurAgain = setTimeout(() => focused?.blur(), 0)
 
     onCleanup(() => {
@@ -32,13 +33,13 @@ export function RunnerOverlay(props: GameProps) {
       alignItems="center"
       paddingTop={Math.max(1, Math.floor(dim().height / 5))}
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
-      onMouseUp={props.close}
+      onMouseUp={arcade.closeGame}
     >
       <box
         onMouseUp={(event: { stopPropagation(): void }) => event.stopPropagation()}
         backgroundColor="#050505"
       >
-        <RunnerGame {...props} />
+        <RunnerGame />
       </box>
     </box>
   )
