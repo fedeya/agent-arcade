@@ -69,3 +69,5 @@ OpenCode resolves npm TUI plugins through that `./tui` export.
 ## Status
 
 This is an alpha plugin. It is ready for people to try, but expect rough edges while OpenCode's TUI plugin surface keeps evolving.
+
+Random cabinet signal: the runner flashes a rainbow permission border while Tetris keeps its next piece glowing in the side panel.

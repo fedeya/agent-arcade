@@ -1,4 +1,5 @@
 /** @jsxImportSource @opentui/solid */
+import { Show } from "solid-js"
 import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { ArcadeOverlay } from "./arcade/ArcadeOverlay"
 import { ArcadeProvider, createArcadeController, type AgentArcadeOptions } from "./arcade/state"
@@ -11,7 +12,13 @@ const plugin: TuiPluginModule & { id: string } = {
     api.slots.register({
       slots: {
         app() {
-          return <ArcadeProvider controller={arcade}>{arcade.open() ? <ArcadeOverlay /> : null}</ArcadeProvider>
+          return (
+            <ArcadeProvider controller={arcade}>
+              <Show when={arcade.open()}>
+                <ArcadeOverlay />
+              </Show>
+            </ArcadeProvider>
+          )
         },
       },
     })

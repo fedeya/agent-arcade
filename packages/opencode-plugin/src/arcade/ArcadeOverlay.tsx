@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import { onCleanup, onMount } from "solid-js"
+import { Show, onCleanup, onMount } from "solid-js"
 import { RGBA } from "@opentui/core"
 import { useTerminalDimensions } from "@opentui/solid"
 import { RunnerGame } from "../games/runner"
@@ -37,8 +37,12 @@ export function ArcadeOverlay() {
       onMouseUp={arcade.closeGame}
     >
       <box onMouseUp={(event: { stopPropagation(): void }) => event.stopPropagation()} backgroundColor="#050505">
-        {arcade.selectedGame() === "runner" ? <RunnerGame /> : null}
-        {arcade.selectedGame() === "tetris" ? <TetrisGame /> : null}
+        <Show when={arcade.selectedGame() === "runner"}>
+          <RunnerGame />
+        </Show>
+        <Show when={arcade.selectedGame() === "tetris"}>
+          <TetrisGame />
+        </Show>
       </box>
     </box>
   )

@@ -88,7 +88,7 @@ export function createArcadeController(api: TuiPluginApi, options?: AgentArcadeO
     api.ui.dialog.replace(() => (
       <DialogSelect
         title="Agent Arcade"
-        options={[...gameOptions]}
+        options={gameOptions}
         current={selectedGame()}
         onSelect={(item) => {
           api.ui.dialog.clear()
