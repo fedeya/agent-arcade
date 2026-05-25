@@ -1,6 +1,17 @@
 # Agent Arcade for OpenCode
 
-Agent Arcade is an experimental OpenCode TUI plugin that turns agent wait time into a tiny terminal arcade game.
+[![npm](https://img.shields.io/npm/v/opencode-agent-arcade)](https://www.npmjs.com/package/opencode-agent-arcade)
+[![license](https://img.shields.io/npm/l/opencode-agent-arcade)](./LICENSE)
+[![OpenCode TUI plugin](https://img.shields.io/badge/OpenCode-TUI%20plugin-blue)](https://opencode.ai)
+
+Agent Arcade is an experimental OpenCode TUI plugin that turns agent wait time into tiny terminal arcade games.
+
+Open it while the agent works, play Runner or Tetris, watch tool events fly through the overlay, and approve pending permissions without leaving the game.
+
+## Games
+
+- Runner: jump over terminal gremlins while agent events become in-game floaters.
+- Tetris: stack pieces while waiting for the agent to finish.
 
 ## Install
 
@@ -67,3 +78,8 @@ Tetris controls:
 The `a` binding only replies to an active OpenCode permission prompt with `once`. Review what the agent is asking for before approving.
 
 The package exports its TUI entrypoint as `./tui` and is intended for OpenCode's TUI plugin loader.
+
+## Links
+
+- npm: https://www.npmjs.com/package/opencode-agent-arcade
+- GitHub: https://github.com/fedeya/agent-arcade

@@ -1,7 +1,7 @@
 {
   "name": "opencode-agent-arcade",
   "version": "0.2.0",
-  "description": "An OpenCode TUI plugin that turns agent wait time into a tiny runner game.",
+  "description": "An OpenCode TUI plugin that turns agent wait time into tiny terminal arcade games.",
   "type": "module",
   "main": "./src/tui.tsx",
   "exports": {
@@ -32,9 +32,13 @@
     "opencode",
     "opencode-plugin",
     "tui",
+    "terminal-game",
     "agent",
     "arcade",
-    "runner-game"
+    "runner-game",
+    "tetris",
+    "opentui",
+    "solid-js"
   ],
   "author": "Federico Minaya",
   "license": "MIT",
