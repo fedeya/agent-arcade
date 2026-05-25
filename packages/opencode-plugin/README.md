@@ -26,15 +26,28 @@ Optional auto-start:
 
 ## Controls
 
-- `/agent-arcade`: open or close the overlay.
+- `/agent-arcade`: open the native game selector, or close the active game overlay.
 - `/agent-arcade-auto`: toggle auto-start.
-- `ctrl+shift+g`: open or close the overlay.
+- `ctrl+shift+g`: open the native game selector, or close the active game overlay.
+- Game selector: use arrows to navigate, `enter` to select, and `esc` to close.
+
+Runner controls:
+
+- `space`, `up`, or `k`: jump.
+- `r`: reset.
+- `m`: return to the game selector.
+- `q` or `esc`: quit.
+- `a`: approve the currently pending OpenCode permission once.
+
+Tetris controls:
+
 - `left` or `h`: move left.
 - `right` or `l`: move right.
 - `down` or `j`: soft drop.
 - `up`, `k`, or `space`: rotate.
 - `d`: hard drop.
 - `r`: reset.
+- `m`: return to the game selector.
 - `q` or `esc`: quit.
 - `a`: approve the currently pending OpenCode permission once.
 

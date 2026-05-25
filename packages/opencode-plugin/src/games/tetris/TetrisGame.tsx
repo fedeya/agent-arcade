@@ -31,6 +31,7 @@ export function TetrisGame(props: GameProps) {
       { name: "agent-arcade.tetris-drop", run: () => move("drop") },
       { name: "agent-arcade.reset", run: reset },
       { name: "agent-arcade.quit", run: props.close },
+      { name: "agent-arcade.menu", run: () => props.backToMenu?.() },
       { name: "agent-arcade.approve-permission", run: props.approvePermission },
     ],
     bindings: [
@@ -40,6 +41,7 @@ export function TetrisGame(props: GameProps) {
       { key: "up,k,space", cmd: "agent-arcade.tetris-rotate" },
       { key: "d", cmd: "agent-arcade.tetris-drop" },
       { key: "a", cmd: "agent-arcade.approve-permission" },
+      { key: "m", cmd: "agent-arcade.menu" },
       { key: "r", cmd: "agent-arcade.reset" },
       { key: "escape,q", cmd: "agent-arcade.quit" },
     ],

@@ -36,11 +36,13 @@ export function RunnerGame(props: GameProps) {
       { name: "agent-arcade.jump", run: jump },
       { name: "agent-arcade.reset", run: reset },
       { name: "agent-arcade.quit", run: props.close },
+      { name: "agent-arcade.menu", run: () => props.backToMenu?.() },
       { name: "agent-arcade.approve-permission", run: props.approvePermission },
     ],
     bindings: [
       { key: "space,up,k", cmd: "agent-arcade.jump" },
       { key: "a", cmd: "agent-arcade.approve-permission" },
+      { key: "m", cmd: "agent-arcade.menu" },
       { key: "r", cmd: "agent-arcade.reset" },
       { key: "escape,q", cmd: "agent-arcade.quit" },
     ],

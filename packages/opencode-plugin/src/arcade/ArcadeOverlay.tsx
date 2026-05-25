@@ -2,10 +2,15 @@
 import { onCleanup, onMount } from "solid-js"
 import { RGBA } from "@opentui/core"
 import { useTerminalDimensions } from "@opentui/solid"
-import type { GameProps } from "../../arcade/types"
-import { RunnerGame } from "./RunnerGame"
+import { RunnerGame } from "../games/runner"
+import { TetrisGame } from "../games/tetris"
+import type { ArcadeGame, GameProps } from "./types"
 
-export function RunnerOverlay(props: GameProps) {
+type ArcadeOverlayProps = GameProps & {
+  game: ArcadeGame
+}
+
+export function ArcadeOverlay(props: ArcadeOverlayProps) {
   const dim = useTerminalDimensions()
 
   onMount(() => {
@@ -34,11 +39,9 @@ export function RunnerOverlay(props: GameProps) {
       backgroundColor={RGBA.fromInts(0, 0, 0, 150)}
       onMouseUp={props.close}
     >
-      <box
-        onMouseUp={(event: { stopPropagation(): void }) => event.stopPropagation()}
-        backgroundColor="#050505"
-      >
-        <RunnerGame {...props} />
+      <box onMouseUp={(event: { stopPropagation(): void }) => event.stopPropagation()} backgroundColor="#050505">
+        {props.game === "runner" ? <RunnerGame {...props} /> : null}
+        {props.game === "tetris" ? <TetrisGame {...props} /> : null}
       </box>
     </box>
   )

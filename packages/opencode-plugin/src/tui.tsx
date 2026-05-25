@@ -1,13 +1,16 @@
 /** @jsxImportSource @opentui/solid */
 import { createSignal } from "solid-js"
 import type { TuiPluginModule } from "@opencode-ai/plugin/tui"
+import { ArcadeOverlay } from "./arcade/ArcadeOverlay"
 import { createSignalFeed } from "./arcade/feed"
-import type { PendingPermission } from "./arcade/types"
-import { RunnerOverlay, formatTool } from "./games/runner"
+import type { ArcadeGame, PendingPermission } from "./arcade/types"
+import { formatTool } from "./games/runner"
 
 type AgentArcadeOptions = {
   autoStart?: boolean
 }
+
+const isArcadeGame = (value: unknown): value is ArcadeGame => value === "runner" || value === "tetris"
 
 const plugin: TuiPluginModule & { id: string } = {
   id: "agent-arcade",
@@ -19,6 +22,7 @@ const plugin: TuiPluginModule & { id: string } = {
     const [done, setDone] = createSignal(false)
     const [pendingPermission, setPendingPermission] = createSignal<PendingPermission | undefined>()
     const [autoStart, setAutoStart] = createSignal(api.kv.get("agent_arcade_auto_start", api.kv.get("wait_game_auto_start", defaultAutoStart)) === true)
+    const [selectedGame, setSelectedGame] = createSignal<ArcadeGame>(isArcadeGame(api.kv.get("agent_arcade_game", undefined)) ? api.kv.get("agent_arcade_game", "tetris") : "tetris")
     const feed = createSignalFeed()
 
     api.event.on("session.status", (event) => {
@@ -82,12 +86,43 @@ const plugin: TuiPluginModule & { id: string } = {
       setOpen(false)
     }
 
+    const startGame = (game: ArcadeGame) => {
+      setSelectedGame(game)
+      api.kv.set("agent_arcade_game", game)
+      if (!busy()) feed.clearFeed()
+      setOpen(true)
+    }
+
+    const showGamePicker = () => {
+      const DialogSelect = api.ui.DialogSelect
+      api.ui.dialog.setSize("medium")
+      api.ui.dialog.replace(() => (
+        <DialogSelect
+          title="Agent Arcade"
+          options={[
+            { title: "Runner", value: "runner", description: "Jump over agent chaos" },
+            { title: "Tetris", value: "tetris", description: "Stack blocks while tools run" },
+          ]}
+          current={selectedGame()}
+          onSelect={(item) => {
+            api.ui.dialog.clear()
+            startGame(item.value as ArcadeGame)
+          }}
+        />
+      ))
+    }
+
+    const backToMenu = () => {
+      closeGame()
+      setTimeout(showGamePicker, 0)
+    }
+
     const openGame = () => {
-      setOpen((value) => {
-        const next = !value
-        if (next && !busy()) feed.clearFeed()
-        return next
-      })
+      if (open()) {
+        closeGame()
+        return
+      }
+      showGamePicker()
     }
 
     const approvePermission = async () => {
@@ -122,11 +157,13 @@ const plugin: TuiPluginModule & { id: string } = {
       slots: {
         app() {
           return open() ? (
-            <RunnerOverlay
+            <ArcadeOverlay
               api={api}
               feed={feed.feed}
               clearFeed={feed.clearFeed}
               close={closeGame}
+              backToMenu={backToMenu}
+              game={selectedGame()}
               busy={busy}
               done={done}
               pendingPermission={pendingPermission}

@@ -81,8 +81,8 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
       state.over
         ? "top out. press r to retry or q to quit"
         : pendingPermission
-          ? "left/right move - up/space rotate - down soft - d hard - a approve - q quit"
-          : "left/right move - up/space rotate - down soft - d hard - r reset - q quit",
+          ? "move arrows/hjkl - up/space rotate - d hard - a approve - m menu - q quit"
+          : "move arrows/hjkl - up/space rotate - d hard - r reset - m menu - q quit",
       state.over ? "#ff5f87" : "#d0d0d0",
     ),
   ])

@@ -15,8 +15,11 @@ export type GameProps = {
   feed: () => AgentSignal[]
   clearFeed: () => void
   close: () => void
+  backToMenu?: () => void
   busy: () => boolean
   done: () => boolean
   pendingPermission: () => PendingPermission | undefined
   approvePermission: () => Promise<void>
 }
+
+export type ArcadeGame = "runner" | "tetris"
