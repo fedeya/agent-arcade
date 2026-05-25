@@ -4,6 +4,8 @@ Agent Arcade is an experimental OpenCode TUI plugin that turns agent wait time i
 
 Open it while the agent works, jump over terminal gremlins, watch tool events fly through the game, and approve pending permissions without leaving the overlay.
 
+![Agent Arcade screenshot](docs/image.png)
+
 ## Install
 
 Add the plugin to your OpenCode TUI config at `.opencode/tui.json`:
