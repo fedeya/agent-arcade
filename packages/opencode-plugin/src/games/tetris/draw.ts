@@ -120,7 +120,7 @@ export function drawTetris(state: TetrisState, pendingPermission: boolean) {
 
     if (y >= 0 && y < preview.length) row.push(text("   "), ...preview[y]!)
     if (y === 7) row.push(text("   "), sideText(`LINES ${String(state.lines).padStart(3, "0")}   LEVEL ${String(levelForLines(state.lines)).padStart(3, "0")}`))
-    if (y === 9) row.push(text("   "), sideText(state.paused ? "PAUSED" : pendingPermission ? "A approve permission" : "agent arcade", state.paused || pendingPermission ? "#ffff00" : "#d0d0d0"))
+    if (y === 9) row.push(text("   "), sideText(pendingPermission ? "A approve permission" : "agent arcade", pendingPermission ? "#ffff00" : "#d0d0d0"))
     if (y >= 10 && y < 10 + state.notices.length) {
       const notice = state.notices[y - 10]!
       row.push(text("   "), sideText(notice.text, noticeFg(notice.kind)))
