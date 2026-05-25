@@ -1,6 +1,6 @@
 {
   "name": "opencode-agent-arcade",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An OpenCode TUI plugin that turns agent wait time into a tiny runner game.",
   "type": "module",
   "main": "./src/tui.tsx",
@@ -8,8 +8,14 @@
     ".": "./src/tui.tsx",
     "./tui": "./src/tui.tsx"
   },
-  "oc-plugin": ["tui"],
-  "files": ["src", "README.md", "LICENSE"],
+  "oc-plugin": [
+    "tui"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public"
   },
