@@ -92,28 +92,9 @@ bun run typecheck
 
 For local OpenCode usage from this repo, `.opencode/tui.json` points at `packages/opencode-plugin/src/tui.tsx`.
 
-## Package Entry
-
-The npm package exports the TUI plugin through `./tui`:
-
-```json
-{
-  "exports": {
-    ".": "./src/tui.tsx",
-    "./tui": "./src/tui.tsx"
-  }
-}
-```
-
-OpenCode resolves npm TUI plugins through that `./tui` export.
-
 ## Status
 
 This is an alpha plugin. It is ready for people to try, but expect rough edges while OpenCode's TUI plugin surface keeps evolving.
-
-Queue goblin note: agent signals line up in a tiny 12-message arcade queue before the game eats them.
-
-Palette gremlin fact: `/agent-arcade` and `ctrl+shift+g` summon the same tiny waiting-room cabinet.
 
 ## Links
 
